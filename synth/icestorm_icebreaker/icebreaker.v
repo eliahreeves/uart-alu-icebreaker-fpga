@@ -26,9 +26,9 @@ SB_PLL40_PAD #(
     .PLLOUTCORE(clk_50)
 );
 
-blinky #(
+alu #(
     .ResetValue(5000000)
-) blinky (
+) alu (
     .clk_i(clk_50),
     .rst_ni(BTN_N),
     .led_o(led)

@@ -1,7 +1,7 @@
 
-# Blinky SystemVerilog Template
+# alu SystemVerilog Template
 
-This project demonstrates a scalable SystemVerilog project template. It implements an overengineered "blinky" example working on multiple synthesis and simulation targets.
+This project demonstrates a scalable SystemVerilog project template. It implements an overengineered "alu" example working on multiple synthesis and simulation targets.
 
 ## Dependencies
 
@@ -38,7 +38,7 @@ GitHub actions are set up to download the latest open-source tools and run all M
 
 The `"dv"` directory holds all testbenches and generic non-synthesizable code.
 
-* The `blinky_runner` module in [`"dv/blinky_runner.sv"`](./dv/blinky_runner.sv) abstracts away the specifics for interfacing with the top module.
+* The `alu_runner` module in [`"dv/alu_runner.sv"`](./dv/alu_runner.sv) abstracts away the specifics for interfacing with the top module.
 * [`"dv/dv.f"`](./dv/dv.f) contains several useful Verilator simulation arguments: <https://veripool.org/guide/latest/exe_verilator.html>.
 
 ### [`"misc"`](./misc) Miscellaneous Script(s)
@@ -57,8 +57,8 @@ The purpose of the "yosys_generic" target is to run "gate-level" or "post-synthe
 
 * [`"synth/yosys_generic/yosys.tcl"`](./synth/yosys_generic/yosys.tcl): This is the TCL file to be passed to Yosys to perform generic synthesis. Note that [`prep`](https://yosyshq.readthedocs.io/projects/yosys/en/latest/cmd/prep.html) is run instead of [`synth`](https://yosyshq.readthedocs.io/projects/yosys/en/latest/cmd/synth.html) to limit the number of optimizations being run.
 * [`"synth/yosys_generic/gls.f"`](./synth/yosys_generic/gls.f): This file lists all the required RTL files to be simulated in `make gls`. Note that the Yosys generic techlib is included for simulation purposes: <https://github.com/YosysHQ/yosys/blame/main/techlibs/common/simlib.v>.
-* [`"synth/yosys_generic/blinky_runner.sv"`](./synth/yosys_generic/blinky_runner.sv): This file is similar to `"dv/blinky_runner.sv"`, in that it abstracts away the specifics of interfacing with the "yosys_generic" target. Note that `blinky_runner` needs to instantite the `blinky_sim` wrapper module, because Yosys will silently rename the `blinky` module because it has parameters. By parameterizing `blinky` inside `blinky_sim` and running Yosys on `blinky_sim`, `blinky_runner` can then instantiate `blinky_sim` directly, as `blinky_sim` does not have parameters.
-* [`"synth/yosys_generic/blinky_sim.sv"`](./synth/yosys_generic/blinky_sim.sv): This file is a wrapper that instantiates the parameterized `blinky` module, ensuring compatibility with Yosys by eliminating parameters at the top level. It also provides a central location to define any necessary parameters.
+* [`"synth/yosys_generic/alu_runner.sv"`](./synth/yosys_generic/alu_runner.sv): This file is similar to `"dv/alu_runner.sv"`, in that it abstracts away the specifics of interfacing with the "yosys_generic" target. Note that `alu_runner` needs to instantite the `alu_sim` wrapper module, because Yosys will silently rename the `alu` module because it has parameters. By parameterizing `alu` inside `alu_sim` and running Yosys on `alu_sim`, `alu_runner` can then instantiate `alu_sim` directly, as `alu_sim` does not have parameters.
+* [`"synth/yosys_generic/alu_sim.sv"`](./synth/yosys_generic/alu_sim.sv): This file is a wrapper that instantiates the parameterized `alu` module, ensuring compatibility with Yosys by eliminating parameters at the top level. It also provides a central location to define any necessary parameters.
 
 ### [`"synth/icestorm_icebreaker"`](./synth/icestorm_icebreaker) Icebreaker Target with Icestorm Flow
 
@@ -69,7 +69,7 @@ The purpose of the "icestorm_icebreaker" target is for simulation and FPGA imple
 * [`"synth/icestorm_icebreaker/nextpnr.py"`](./synth/icestorm_icebreaker/nextpnr.py): This file is given to the `nextpnr` Python API to create timing constraints.
 * [`"synth/icestorm_icebreaker/yosys.tcl"`](./synth/icestorm_icebreaker/yosys.tcl): This TCL file is passed to Yosys to perform synthesis mapped to iCE40 standard cells ([`"ice40/cells_sim.v"`](https://github.com/YosysHQ/yosys/blob/main/techlibs/ice40/cells_sim.v)).
 * [`"synth/icestorm_icebreaker/gls.f"`](./synth/icestorm_icebreaker/gls.f): This file lists all the required RTL files to be simulated in `make icestorm_icebreaker_gls`.
-* [`"synth/icestorm_icebreaker/blinky_runner.sv"`](./synth/icestorm_icebreaker/blinky_runner.sv): This file is similar to `"dv/blinky_runner.sv"`, in that it abstracts away the specifics of interfacing with the "icestorm_icebreaker" target. Also note that it overrides the output of the PLL, so that the simulation's timing is accurate.
+* [`"synth/icestorm_icebreaker/alu_runner.sv"`](./synth/icestorm_icebreaker/alu_runner.sv): This file is similar to `"dv/alu_runner.sv"`, in that it abstracts away the specifics of interfacing with the "icestorm_icebreaker" target. Also note that it overrides the output of the PLL, so that the simulation's timing is accurate.
 
 ### [`"third_party"`](./third_party) Code From Outside This Project
 

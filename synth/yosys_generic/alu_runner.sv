@@ -1,5 +1,5 @@
 
-module blinky_runner;
+module alu_runner;
 
 logic clk_i;
 logic rst_ni;
@@ -15,7 +15,7 @@ initial begin
     end
 end
 
-blinky_sim blinky_sim (.*);
+alu_sim alu_sim (.*);
 
 always @(posedge led_o) $info("Led on");
 always @(negedge led_o) $info("Led off");

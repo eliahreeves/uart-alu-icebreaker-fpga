@@ -1,12 +1,12 @@
 
-module blinky_sim (
+module alu_sim (
     input  logic clk_i,
     input  logic rst_ni,
     output logic led_o
 );
 
-blinky #(
+alu #(
     .ResetValue(100)
-) blinky (.*);
+) alu (.*);
 
 endmodule

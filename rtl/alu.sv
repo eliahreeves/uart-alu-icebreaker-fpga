@@ -4,42 +4,38 @@ module alu import config_pkg::*;#(
 )(
     input  logic clk_i,
     input  logic rst_ni,
-    input  logic [DATA_WIDTH-1:0]  data_i,
-    output logic [DATA_WIDTH-1:0]  data_o,
-
-    input logic ready_i,
-    input logic valid_i,
-
-    output logic ready_o,
-    output logic valid_o
+    input logic rxd_i,
+    output logic txd_o
 );
-wire uart;
-uart_tx #(
-    .DATA_WIDTH(DATA_WIDTH)
-) uart_tx (
-    .clk(clk_i),
-    .rst(!rst_ni),
-    .s_axis_tdata(data_i),
-    .s_axis_tready(ready_o),
-    .s_axis_tvalid(valid_i),
-    .prescale(1),
-    .txd(uart),
+wire ready, valid;
+logic [DATA_WIDTH-1:0] data;
 
-    .busy()
-);
 uart_rx #(
     .DATA_WIDTH(DATA_WIDTH)
 ) uart_rx (
     .clk(clk_i),
     .rst(!rst_ni),
-    .m_axis_tdata(data_o),
-    .m_axis_tready(ready_i),
-    .m_axis_tvalid(valid_o),
-    .prescale(1),
-    .rxd(uart),
-    
+    .m_axis_tdata(data),
+    .m_axis_tready(ready),
+    .m_axis_tvalid(valid),
+    .prescale(65),
+    .rxd(rxd_i),
     .busy(),
     .frame_error(),
     .overrun_error()
+);
+
+uart_tx #(
+    .DATA_WIDTH(DATA_WIDTH)
+) uart_tx (
+    .clk(clk_i),
+    .rst(!rst_ni),
+    .s_axis_tdata(data),
+    .s_axis_tready(ready),
+    .s_axis_tvalid(valid),
+    // https://www.desmos.com/calculator/udzxe3bbln
+    .prescale(65),
+    .txd(txd_o),
+    .busy()
 );
 endmodule

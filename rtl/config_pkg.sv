@@ -6,6 +6,8 @@ package config_pkg;
     HANDLE_RES,
     GET_LENGTH_LSB,
     GET_LENGHT_MSB,
+    GET_INITIAL_OPERAND,
+    GET_OPERAND,
     ADD,
     // MUL,
     // DIV,
@@ -13,12 +15,5 @@ package config_pkg;
     TRANSMIT
 
   } state_t;
-
-
-  //used in message_len.sv
-  //typedef enum logic {
-  //  LSB,
-  //  MSB
-  //} message_len_state_t;
 
 endpackage

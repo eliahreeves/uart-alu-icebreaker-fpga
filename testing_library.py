@@ -20,19 +20,12 @@ def echo(ser: serial.Serial, data: str) -> None:
     ser.write(data.encode())
 
 def add(ser: serial.Serial, args: list[int]) -> None:
-
     message_len = (len(args) * 4) + 4
     ser.write(bytes([0xAD, 0x00]))
     ser.write(bytes([message_len & 0xFF, (message_len >> 8) & 0xFF]))
-    # data = b''.join(struct.pack('<i', x) for x in args)
-
-    # res_data = struct.pack('<i', sum(args))
-
+    data = b''.join(struct.pack('<i', x) for x in args)
     # print(hex(sum(args)))
-
-    # ser.write(data)
-    ser.write(bytes([0x00, 0x00, 0x00, 0x00]))
-    ser.write(bytes([0x10, 0x00, 0x00, 0x11]))
+    ser.write(data)
 
 
 if __name__ == '__main__':

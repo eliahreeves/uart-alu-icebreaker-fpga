@@ -4,7 +4,8 @@ def test_echo():
     ser = test_lib.open_conection('/dev/ttyUSB1')
     try:
         # test_lib.echo(ser, message)
-        test_lib.add(ser, [1, 1])
+        test_lib.echo(ser, "Hello!")
+        # test_lib.add(ser, [1, 1])
 
     except Exception as e:
         print(f"Error: {e}")

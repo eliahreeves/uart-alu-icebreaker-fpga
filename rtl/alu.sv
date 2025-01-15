@@ -15,7 +15,7 @@ module alu
   uart #(
       .DATA_WIDTH(DATA_WIDTH)
   ) uart (
-      .clk_i(clk_i),
+      .clk(clk_i),
       .rst(!rst_ni),
       .m_axis_tdata(data_o),
       .m_axis_tready(rx_ready_i),
@@ -28,9 +28,8 @@ module alu
       .s_axis_tvalid(tx_valid_i),
       .tx_busy(),
       .rx_busy(),
-      .rx_overrun_error,
-      .rx_frame_error
-
+      .rx_overrun_error(),
+      .rx_frame_error()
   );
 
   // uart_rx #(
@@ -116,95 +115,112 @@ module alu
     tx_valid_i = 0;
     data_i = 0;
 
-    if (rs)
+    if(rx_valid_o && state_q != TRANSMIT) begin
+      bit_num_d = bit_num_q + 1;
+    end
 
-      unique case (state_q)
-        GET_OP_CODE: begin
-          if (rx_valid_o) begin
-            if (data_o == 'hec) begin
-              is_echo_d = 1;
-              future_state_d = ECHO;
-              state_d = HANDLE_RES;
-            end else if (data_o == 'had) begin
-              future_state_d = ADD;
-              state_d = HANDLE_RES;
-            end
+    unique case (state_q)
+      GET_OP_CODE: begin
+        if (rx_valid_o) begin
+          if (data_o == 'hec) begin
+            is_echo_d = 1;
+            future_state_d = ECHO;
+            state_d = HANDLE_RES;
+          end else if (data_o == 'had) begin
+            future_state_d = ADD;
+            state_d = HANDLE_RES;
           end
         end
-        HANDLE_RES: begin
-          if (rx_valid_o) begin
-            state_d = GET_LENGTH_LSB;
-          end
+      end
+      HANDLE_RES: begin
+        if (rx_valid_o) begin
+          state_d = GET_LENGTH_LSB;
         end
-        GET_LENGTH_LSB: begin
-          if (rx_valid_o) begin
-            data_length_d[DATA_WIDTH-1:0] = data_o;
-            state_d = GET_LENGHT_MSB;
-          end
+      end
+      GET_LENGTH_LSB: begin
+        if (rx_valid_o) begin
+          data_length_d[DATA_WIDTH-1:0] = data_o;
+          state_d = GET_LENGHT_MSB;
         end
-        GET_LENGHT_MSB: begin
-          if (rx_valid_o) begin
-            data_length_d[2*DATA_WIDTH-1:DATA_WIDTH] = data_o;
+      end
+      GET_LENGHT_MSB: begin
+        if (rx_valid_o) begin
+          data_length_d[2*DATA_WIDTH-1:DATA_WIDTH] = data_o;
+          accum_d = 0;
+          state_d = (is_echo_q) ? future_state_q : GET_INITIAL_OPERAND;
+        end
+      end
+      GET_INITIAL_OPERAND: begin
+        if (bit_num_q == 'd3) begin
+            state_d   = GET_OPERAND;
+          end
+        if (data_length_q == 'd4) begin
+          bit_num_d = 0;
+          state_d   = TRANSMIT;
+        end
+        if (rx_valid_o) begin
+          data_length_d = data_length_q - 1;
+          accum_d[bit_num_q*8+:8] = data_o;
+        end
+      end
+      GET_OPERAND: begin
+        if (data_length_q == 'd4) begin
+          bit_num_d = 0;
+          state_d   = TRANSMIT;
+        end
+
+        if (bit_num_q == 'd3) begin
+            state_d   = future_state_q;
+        end
+
+        if (rx_valid_o) begin
+          data_length_d = data_length_q - 1;
+          operand_d[bit_num_q*8+:8] = data_o;
+        end
+      end
+      ADD: begin
+        rx_ready_i = 0;
+        accum_d = accum_q + operand_q;
+        if(data_length_q == 'd4)begin
+          bit_num_d = 0;
+          state_d   = TRANSMIT;
+        end else begin
+          state_d = GET_OPERAND;
+        end
+      end
+      TRANSMIT: begin
+        rx_ready_i = 0;
+        if (tx_ready_o) begin
+          if (bit_num_q == 'd3) begin
             bit_num_d = 0;
-            accum_d = 0;
-            state_d = (is_echo_q) ? future_state_q : GET_INITIAL_OPERAND;
-
-          end
-        end
-        GET_INITIAL_OPERAND: begin
-
-        end
-        GET_OPERAND: begin
-        end
-        ECHO: begin
-          rx_ready_i = 0;
-          if (data_length_q == 'd4) begin
             state_d = GET_OP_CODE;
           end
-          if (rx_valid_o && tx_ready_o) begin
-            rx_ready_i = 1;
-            data_i = data_o;
-            tx_valid_i = 1;
-            data_length_d = data_length_q - 1;
-          end
+          // unique case (bit_num_q)
+          //   0: data_i = accum_q[7:0];
+          //   1: data_i = accum_q[15:8];
+          //   2: data_i = accum_q[23:16];
+          //   3: data_i = accum_q[31:24];
+          // endcase
+          data_i = accum_q[bit_num_q*8+:8];
+          tx_valid_i = 1;
+          bit_num_d = bit_num_q + 1;
+          
         end
-        ADD: begin
-          if (data_length_q == 'd4) begin
-            state_d = TRANSMIT;
-          end
-          if (rx_valid_o) begin
-            data_length_d = data_length_q - 1;
-            bit_num_d = bit_num_q + 1;
-            // unique case (bit_num_q)
-            //   0: operand_d[7:0] = data_o;
-            //   1: operand_d[15:8] = data_o;
-            //   2: operand_d[23:16] = data_o;
-            //   3: operand_d[31:24] = data_o;
-            // endcase
-            operand_d[bit_num_q*8+:8] = data_o;
-            if (bit_num_q == 'd3) begin
-              accum_d = accum_q + operand_d;
-            end
-          end
+      end
+      ECHO: begin
+        rx_ready_i = 0;
+        if (data_length_q == 'd4) begin
+          bit_num_d = 0;
+          state_d = GET_OP_CODE;
         end
-        TRANSMIT: begin
-          rx_ready_i = 0;
-          if (tx_ready_o) begin
-            if (bit_num_q == 'd3) begin
-              state_d = GET_OP_CODE;
-            end
-            // unique case (bit_num_q)
-            //   0: data_i = accum_q[7:0];
-            //   1: data_i = accum_q[15:8];
-            //   2: data_i = accum_q[23:16];
-            //   3: data_i = accum_q[31:24];
-            // endcase
-            data_i = accum_q[bit_num_q*8+:8];
-            tx_valid_i = 1;
-            bit_num_d = bit_num_q + 1;
-          end
+        if (rx_valid_o && tx_ready_o) begin
+          rx_ready_i = 1;
+          data_i = data_o;
+          tx_valid_i = 1;
+          data_length_d = data_length_q - 1;
         end
-      endcase
+      end
+    endcase
   end
 endmodule
 

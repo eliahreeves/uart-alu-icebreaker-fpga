@@ -12,15 +12,19 @@ always begin
     $urandom(100);
     $timeformat( -3, 3, "ms", 0);
 
-      alu_runner.reset();
+    alu_runner.reset();
 
-    alu_runner.send_and_verify(8'd231);
-      //  alu_runner.reset();
-    alu_runner.send_and_verify(8'd0);
-        // alu_runner.reset();
-    alu_runner.send_and_verify(8'd83);
-        // alu_runner.reset();
-    alu_runner.send_and_verify(8'd33);
+    // alu_runner.send_and_verify(8'd231);
+    //   //  alu_runner.reset();
+    // alu_runner.send_and_verify(8'd0);
+    //     // alu_runner.reset();
+    // alu_runner.send_and_verify(8'd83);
+    //     // alu_runner.reset();
+    // alu_runner.send_and_verify(8'd33);
+    alu_runner.send_and_verify(85);
+    alu_runner.send_and_verify(0);
+    alu_runner.send_and_verify(255);
+    alu_runner.send_and_verify(1);
     
     $display( "End simulation." );
     $finish;

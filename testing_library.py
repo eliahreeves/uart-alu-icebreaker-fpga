@@ -24,7 +24,6 @@ def add(ser: serial.Serial, args: list[int]) -> None:
     ser.write(bytes([0xAD, 0x00]))
     ser.write(bytes([message_len & 0xFF, (message_len >> 8) & 0xFF]))
     data = b''.join(struct.pack('<i', x) for x in args)
-    # print(hex(sum(args)))
     ser.write(data)
 
 

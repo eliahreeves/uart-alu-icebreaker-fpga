@@ -4,7 +4,7 @@ module alu_tb
     ;
 
 alu_runner alu_runner ();
-
+logic[7:0] res;
 always begin
     $dumpfile( "dump.fst" );
     $dumpvars;
@@ -21,10 +21,14 @@ always begin
     // alu_runner.send_and_verify(8'd83);
     //     // alu_runner.reset();
     // alu_runner.send_and_verify(8'd33);
-    alu_runner.send_and_verify(85);
-    alu_runner.send_and_verify(0);
-    alu_runner.send_and_verify(255);
-    alu_runner.send_and_verify(1);
+    alu_runner.send(8'hec);
+    alu_runner.send(8'h00);
+    alu_runner.send(8'h05);
+    alu_runner.send(8'h00);
+    alu_runner.send(8'h12);
+    alu_runner.receive(res);
+    $display("Received %h", res);
+    // alu_runner.add_and_verify(32'h00000000, 32'h00000000);
     
     $display( "End simulation." );
     $finish;

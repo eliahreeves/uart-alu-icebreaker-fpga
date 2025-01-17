@@ -22,7 +22,7 @@ logic pll_out;
 initial begin
     pll_out = 0;
     forever begin
-        #8.333ns; // 60MHz
+        #16.393ns; // 30.5MHz
         pll_out = !pll_out;
     end
 end
@@ -57,44 +57,101 @@ uart_rx #(
     .frame_error(),
     .overrun_error()
 );
-
+initial begin
+    #5ms;
+    $display("Timed out");
+    $fatal;
+end
 task reset;
     BTN_N <= 0;
     @(posedge CLK);
     BTN_N <= 1;
 endtask
 
-task send(input logic [7:0] data);
+task automatic send(input logic [7:0] data);
+    @(posedge CLK);
+    while (!tx_ready_o) @(posedge CLK);
     data_to_send_i <= data;
     tx_valid_i <= 1;
-    wait(tx_ready_o);
     @(posedge CLK);
+    while (!tx_ready_o) @(posedge CLK);
     tx_valid_i <= 0;
 endtask
 
-task receive(output logic [7:0] data);
-    rx_ready_i <= 1;
-    @(posedge CLK);
-    wait(rx_valid_o);
-    @(posedge CLK);
-    data = data_received_o;
-    
+task automatic receive(output logic [7:0] data);
     @(posedge CLK);
     rx_ready_i <= 0;
+    while (!rx_valid_o) @(posedge CLK);
+    rx_ready_i <= 1;
+    @(posedge CLK);
+    data = data_received_o;
+    rx_ready_i <= 0;
+endtask
+
+// task send(input logic [7:0] data);
+//     data_to_send_i <= data;
+//     tx_valid_i <= 1;
+//     wait(tx_ready_o);
+//     @(posedge CLK);
+//     tx_valid_i <= 0;
+// endtask
+
+// task receive(output logic [7:0] data);
+//     rx_ready_i <= 1;
+//     @(posedge CLK);
+//     wait(rx_valid_o);
+//     @(posedge CLK);
+//     data = data_received_o;
     
+//     @(posedge CLK);
+//     rx_ready_i <= 0;  
+// endtask
+
+task automatic add_two_numbers(input logic [31:0] a, input logic [31:0] b);
+    //op
+    send('had);
+    //nil
+    send('h00);
+    //len
+    send('h08);
+    send('h00);
+    //send a
+    for (int i = 0; i < 4; i++) begin
+        send(a[8*i +: 8]);
+    end
+     for (int i = 0; i < 4; i++) begin
+        send(b[8*i +: 8]);
+    end
 endtask
 
+task automatic recieve_int(output logic [31:0] data);
+    logic [7:0] temp;
+    for (int i = 0; i < 4; i++) begin
+        $display("Receiving %d", i);
+        receive(temp);
+        data[8*i +: 8] = temp;
+    end
+endtask
 
-task send_and_verify(input logic [7:0] data);
-    logic [7:0] received;
-    send(data);
-    receive(received);
-
-    //verify data
-    if (data == received)
-        $display("PASS: Sent %h, received %h", data, received);
+task automatic add_and_verify(input logic [31:0] a, input logic [31:0] b);
+    logic [31:0] result;
+    add_two_numbers(a, b);
+    recieve_int(result);
+    if (result == a + b)
+        $display("PASS: %d + %d = %d", a, b, result);
     else
-        $display("FAIL: Sent %h, received %h", data, received);
+        $display("FAIL: %d + %d = %d", a, b, result);
 endtask
+// task send_and_verify(input logic [7:0] data);
+//     logic [7:0] received;
+//     send(data);
+//     receive(received);
+
+//     //verify data
+//     if (data == received)
+//         $display("PASS: Sent %h, received %h", data, received);
+//     else
+//         $display("FAIL: Sent %h, received %h", data, received);
+// endtask
 
 endmodule

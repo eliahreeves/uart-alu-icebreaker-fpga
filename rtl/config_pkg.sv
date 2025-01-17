@@ -9,7 +9,7 @@ package config_pkg;
     GET_INITIAL_OPERAND,
     GET_OPERAND,
     ADD,
-    // MUL,
+    MUL,
     // DIV,
     ECHO,
     TRANSMIT

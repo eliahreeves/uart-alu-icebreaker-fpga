@@ -166,7 +166,7 @@ module alu
           // Go to operation after 4 bytes
           if (bit_num_q == 'd3) begin
             bit_num_d = 0;
-            state_d = future_state_q;
+            state_d   = future_state_q;
           end else if (data_length_q == 'd4) begin
             // Go to transmit if all data is received
             bit_num_d = 0;
@@ -197,7 +197,7 @@ module alu
         // ready for data from multiplier
         imul_ready_i = 1;
         // imul_valid_i = 1;
-        if(imul_ready_o && bit_num_q == 'd0) begin
+        if (imul_ready_o && bit_num_q == 'd0) begin
           // state_d = TRANSMIT;
           bit_num_d = bit_num_q + 1;
           imul_valid_i = 1;

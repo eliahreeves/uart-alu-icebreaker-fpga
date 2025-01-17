@@ -1,0 +1,12 @@
+test_bsg.sv
++incdir+../../../bsg_misc
+../../../bsg_misc/bsg_defines.sv
+../../../bsg_misc/bsg_idiv_iterative.sv
+../../../bsg_misc/bsg_idiv_iterative_controller.sv
+../../../bsg_misc/bsg_dff_en.sv
+../../../bsg_misc/bsg_mux.sv
+../../../bsg_misc/bsg_mux_one_hot.sv
+../../../bsg_misc/bsg_xnor.sv
+../../../bsg_misc/bsg_nor2.sv
+../../../bsg_misc/bsg_adder_cin.sv
+../../../bsg_misc/bsg_counter_clear_up.sv

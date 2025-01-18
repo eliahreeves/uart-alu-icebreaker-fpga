@@ -13,5 +13,5 @@
 
 * [HW1: FPGA UART ALU](./hw1/)
 
-* [Final Project](./final_project/)
-    * [Project Proposal](./final_project/project_proposal/)
+* [Final Project](https://github.com/nunibye/cse293-final-project)
+    * [Project Proposal](https://github.com/nunibye/cse293-final-project/tree/main/project_proposal)

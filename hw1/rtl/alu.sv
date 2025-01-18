@@ -31,14 +31,14 @@ module alu
       .rx_overrun_error(),
       .rx_frame_error()
   );
-
-  logic imul_ready_i, imul_valid_o, imul_ready_o, imul_valid_i, imul_rst_ni;
+  logic math_rst_ni;
+  logic imul_ready_i, imul_valid_o, imul_ready_o, imul_valid_i;
   logic [4*DATA_WIDTH-1:0] imul_res_o;
   bsg_imul_iterative #(
       .width_p(4 * DATA_WIDTH)
   ) bsg_imul_iterative (
       .clk_i(clk_i),
-      .reset_i(!rst_ni || !imul_rst_ni),
+      .reset_i(!rst_ni || !math_rst_ni),
       .v_i(imul_valid_i),
       .ready_and_o(imul_ready_o),
 
@@ -54,7 +54,23 @@ module alu
       .result_o(imul_res_o),
       .yumi_i(imul_ready_i)  // ready_i
   );
-
+  logic idiv_ready_i, idiv_valid_i, idiv_valid_o, idiv_ready_o;
+  logic [4*DATA_WIDTH-1:0] idiv_res_o;
+  bsg_idiv_iterative#(
+      .width_p(4 * DATA_WIDTH)
+  ) (
+      .clk_i(clk_i),
+      .reset_i(!rst_ni || !math_rst_ni),
+      .v_i(idiv_valid_i),
+      .ready_and_o(idiv_ready_o),
+      .dividend_i(accum_q),
+      .divisor_i(operand_q),
+      .signed_div_i(1),
+      .v_o(idiv_valid_o),
+      .yumi_i(idiv_ready_i),
+      .remainder_o(),
+      .quotient_o(idiv_res_o)
+  );
   state_t state_d, state_q, future_state_d, future_state_q;
   logic [1:0] bit_num_d, bit_num_q;
   logic [4*DATA_WIDTH -1:0] accum_d, accum_q, operand_d, operand_q;
@@ -97,7 +113,10 @@ module alu
     //multiplier
     imul_ready_i = 0;
     imul_valid_i = 0;
-    imul_rst_ni = 1;
+    math_rst_ni = 1;
+
+    idiv_ready_i = 0;
+    idiv_valid_i = 0;
 
     unique case (state_q)
       GET_OP_CODE: begin
@@ -112,6 +131,9 @@ module alu
             state_d = HANDLE_RES;
           end else if (data_o == 'haf) begin
             future_state_d = MUL;
+            state_d = HANDLE_RES;
+          end else if (data_o == 'hf6) begin
+            future_state_d = DIV;
             state_d = HANDLE_RES;
           end
         end
@@ -158,7 +180,7 @@ module alu
       end
       GET_OPERAND: begin
         //this is weird but might need?
-        imul_rst_ni = 0;
+        math_rst_ni = 0;
 
         if (rx_valid_o) begin
           bit_num_d = bit_num_q + 1;
@@ -202,29 +224,33 @@ module alu
           bit_num_d = bit_num_q + 1;
           imul_valid_i = 1;
         end
-        // For this to work we assume that bit_num_q is 0 when entering
-        // if (bit_num_q == 'd0) begin
-        //   // This is kinda jank. need a way to set valid high for one cycle
-        //   bit_num_d = bit_num_q + 1;
-        //   imul_valid_i = 1;
-        //   // state_d   = TRANSMIT;
-        // end
-
-        // // if(imul_valid_o) begin
-        // // end
-        // // Already said we are ready so now we wait for data to come back
+        // Already said we are ready so now we wait for data to come back
         if (imul_valid_o) begin
-          accum_d = imul_res_o;
+          accum_d   = imul_res_o;
+          bit_num_d = 0;
           if (data_length_q == 'd4) begin
             // If all data is recived then transmit. Counter is messed up so
             // it should be reset for next stage.
-            bit_num_d = 0;
-            state_d   = TRANSMIT;
+            state_d = TRANSMIT;
           end else begin
             // Need to reset counter.
-            bit_num_d = 0;
-            state_d   = GET_OPERAND;
+            state_d = GET_OPERAND;
           end
+        end
+      end
+      DIV: begin
+        // Don't get more data
+        rx_ready_i   = 0;
+        idiv_ready_i = 1;
+        if (idiv_ready_o && bit_num_q == 'd0) begin
+          bit_num_d = bit_num_q + 1;
+          idiv_valid_i = 1;
+        end
+
+        if (idiv_valid_o) begin
+          accum_d   = idiv_res_o;
+          bit_num_d = 0;
+          state_d   = TRANSMIT;
         end
       end
       TRANSMIT: begin

@@ -10,7 +10,7 @@ package config_pkg;
     GET_OPERAND,
     ADD,
     MUL,
-    // DIV,
+    DIV,
     ECHO,
     TRANSMIT
 

@@ -10,6 +10,8 @@
     * Exercise version control and collaboration with Git/GitHub
     * Practice using a multitude of open-source tools and resources such as Verilator, Yosys, zachjs/sv2v, OpenLane, SKY130, BaseJump STL, and more
 ## Contents
-* [Final Project Proposal](./project_proposal/)
 
 * [HW1: FPGA UART ALU](./hw1/)
+
+* [Final Project](./final_project/)
+    * [Project Proposal](./final_project/project_proposal/)

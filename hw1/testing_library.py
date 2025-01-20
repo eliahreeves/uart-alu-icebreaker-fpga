@@ -33,6 +33,11 @@ def mul(ser: serial.Serial, args: list[int]) -> None:
     data = b''.join(struct.pack('<i', x) for x in args)
     ser.write(data)
 
+def div(ser: serial.Serial, n: int, d: int) -> None:
+    message_len = 12
+    ser.write(bytes([0xF6, 0x00]))
+    ser.write(bytes([message_len & 0xFF, (message_len >> 8) & 0xFF]))
+    ser.write(struct.pack('<ii', n, d))
 
 if __name__ == '__main__':
     raise ImportError("This is a library module and should not be run directly.")

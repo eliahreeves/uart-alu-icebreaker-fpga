@@ -2,7 +2,8 @@
 module alu
   import config_pkg::*;
 #(
-    parameter DATA_WIDTH = 8
+    parameter DATA_WIDTH = 8,
+    parameter UART_PRESCALE = 33
 ) (
     input  logic clk_i,
     input  logic rst_ni,
@@ -56,9 +57,9 @@ module alu
   );
   logic idiv_ready_i, idiv_valid_i, idiv_valid_o, idiv_ready_o;
   logic [4*DATA_WIDTH-1:0] idiv_res_o;
-  bsg_idiv_iterative#(
+  bsg_idiv_iterative #(
       .width_p(4 * DATA_WIDTH)
-  ) (
+  ) bsg_idiv_iterative (
       .clk_i(clk_i),
       .reset_i(!rst_ni || !math_rst_ni),
       .v_i(idiv_valid_i),

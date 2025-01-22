@@ -2,8 +2,7 @@
 module alu
   import config_pkg::*;
 #(
-    parameter DATA_WIDTH = 8,
-    parameter UART_PRESCALE = 33
+    parameter DATA_WIDTH = 8
 ) (
     input  logic clk_i,
     input  logic rst_ni,

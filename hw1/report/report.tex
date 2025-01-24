@@ -1,0 +1,56 @@
+\documentclass{article}
+
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage[utf8]{inputenc}
+\usepackage[TS1,T1]{fontenc}
+\usepackage{array, booktabs}
+\usepackage{graphicx}
+\usepackage[x11names,table]{xcolor}
+\usepackage{titling}
+
+\setlength{\droptitle}{-0.75in}
+
+\hypersetup{
+    colorlinks=false}
+    
+\newcommand{\foo}{\color{black}\makebox[0pt]{\textbullet}\hskip-0.5pt\vrule width 1pt\hspace{\labelsep}}
+
+\fancypagestyle{firstpage}{%
+  \lhead{UC Santa Cruz}
+  \rhead{CSE 293: Verilog Project to Silicon - Winter 2025
+  }
+}
+
+%%%% PROJECT TITLE
+\title{Homework 1: UART Arithmetic Logic Unit}
+
+
+\author{{Eliah Reeves}}
+
+\date{\vspace{-5ex}} %NO DATE
+
+\begin{document}
+
+\maketitle
+\thispagestyle{firstpage}
+\section{Introduction}
+
+In this assignment I created an Arithmetic Logic Unit (ALU) that can perform a variety of operations on integers. The ALU supports the following operations:
+\begin{itemize}
+    \item Echo back input.
+    \item Addition on a list of 32-bit integers.
+    \item Multiplication on a list of 32-bit signed integers.
+    \item Division on a pair of 32-bit signed integers.
+\end{itemize}
+The ALU is designed to be implemented on an iCEBreaker FPGA board and communicates with a host computer via a UART interface. This project is implemented in SystemVerilog.
+\section{Technical Details}
+\subsection{Hardware}
+Target: iCEBreaker v1.0 FPGA board.\\
+UART Baud Rate: 115200.\\
+UART Payload Size: 8 bits.\\
+UART Stop Bits: 1.\\
+No UART Parity.
+\subsection*{Commands}
+
+\end{document}

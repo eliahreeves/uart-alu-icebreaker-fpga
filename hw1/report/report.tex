@@ -16,14 +16,14 @@ colorlinks=false}
 
 \newcommand{\foo}{\color{black}\makebox[0pt]{\textbullet}\hskip-0.5pt\vrule width 1pt\hspace{\labelsep}}
 
-\fancypagestyle{firstpage}{%
+\fancypagestyle{firstpage}{
   \lhead{UC Santa Cruz}
   \rhead{CSE 293: Verilog Project to Silicon - Winter 2025
   }
 }
 
 %%%% PROJECT TITLE
-\title{Homework 1: UART Arithmetic Logic Unit}
+\title{Homework 1: UART Arithmetic Logic Unit \\ \large \href{https://github.com/nunibye/cse293/tree/main/hw1}{\underline{github.com/nunibye/cse293/tree/main/hw1}}}
 
 \author{{Eliah Reeves}}
 
@@ -50,7 +50,7 @@ Output waveform of SystemVerilog Simulation:
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.8\textwidth]{uart_echo_sim.png}
+  \includegraphics[width=0.7\textwidth]{uart_echo_sim.png}
   \caption{UART echo simulation}
 \end{figure}
 \newpage
@@ -58,18 +58,19 @@ After the success of my initial simulation I ran the same test useing gate level
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.8\textwidth]{uart_echo_gls.png}
+  \includegraphics[width=0.7\textwidth]{uart_echo_gls.png}
   \caption{UART echo gate level synthesis simulation}
 \end{figure}
 
-Finally the last step was to test the UART echo on the FPGA board. I used a python script and minicom to test.
+Finally, the last step was to test the UART echo on the FPGA board. I used a python script and minicom to test.
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.8\textwidth]{uart_echo.png}
+  \includegraphics[width=0.6\textwidth]{uart_echo.png}
   \caption{UART echo in minicom}
 \end{figure}
 
+Challenges I faced during this part of the assignment were mostly related to getting started. Creating all files and getting something running was difficult. Initially I also set up the UART modules backwards so that the module had data input and output instead of UART input and output. This was a simple fix, but it took some time to figure out. 
 \subsection{Sending requests}
 
 The next step in creating a functional ALU was to create a way to test it. To do this I used the serial package to send a request.
@@ -121,6 +122,8 @@ The ALU supports the following opcodes:
   \end{tabular}
   \caption{Op codes}
 \end{table}
+
+This step was not challenging, but it was hard at times to determine if the request was being sent correctly.
 \subsection{Implementation}
 
 I Implemented the ALU using a state machine. Theses are the possible states:
@@ -152,12 +155,18 @@ Echos all data received for length number of bytes. Transitions to GET\_OP\_CODE
 
 One challenge I encounter while writing this part of the assignment was that the multiplier never sent ready. I worked around this be resetting the multiplier before using it. This worked, but there is liekly a more elegant way.
 \section{Testing}
-In order to test my implementation I created a test bench that runs 1000 tests of each operation each test has a random number of inputs with a random value for each input. I also tested the board after it was programmed using minicom and a python script. Simulation waveform:
+In order to test my implementation I created a test bench that runs 1000 tests of each operation each test has a random number of inputs with a random value for each input. I also tested the board after it was programmed using minicom and a python script.
 
 \begin{figure}[h!]
   \centering
   \includegraphics[width=0.8\textwidth]{multiply.png}
   \caption{ALU testing multiply}
+\end{figure}
+
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=0.8\textwidth]{py_test.png}
+  \caption{Request sent with Python}
 \end{figure}
 
 

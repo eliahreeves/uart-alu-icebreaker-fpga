@@ -2,7 +2,7 @@ module alu_tb
   import config_pkg::*;
   import dv_pkg::*;
 ;
-  localparam int TRIALS = 100;
+  localparam int TRIALS = 1000;
   alu_runner alu_runner ();
 
   task automatic send_4_bytes(input logic [31:0] data);

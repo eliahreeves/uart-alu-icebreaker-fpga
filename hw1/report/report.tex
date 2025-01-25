@@ -12,8 +12,8 @@
 \setlength{\droptitle}{-0.75in}
 
 \hypersetup{
-    colorlinks=false}
-    
+colorlinks=false}
+
 \newcommand{\foo}{\color{black}\makebox[0pt]{\textbullet}\hskip-0.5pt\vrule width 1pt\hspace{\labelsep}}
 
 \fancypagestyle{firstpage}{%
@@ -24,7 +24,6 @@
 
 %%%% PROJECT TITLE
 \title{Homework 1: UART Arithmetic Logic Unit}
-
 
 \author{{Eliah Reeves}}
 
@@ -38,13 +37,129 @@
 
 In this assignment I created an Arithmetic Logic Unit (ALU) that can perform a variety of operations on integers. The ALU supports the following operations:
 \begin{itemize}
-    \item Echo back input.
-    \item Addition on a list of 32-bit integers.
-    \item Multiplication on a list of 32-bit signed integers.
-    \item Division on a pair of 32-bit signed integers.
+  \item Echo back input.
+  \item Addition on a list of 32-bit integers.
+  \item Multiplication on a list of 32-bit signed integers.
+  \item Division on a pair of 32-bit signed integers.
 \end{itemize}
 The ALU is designed to be implemented on an iCEBreaker FPGA board and communicates with a host computer via a UART interface. This project is implemented in SystemVerilog.
+\section{Procedure}
+\subsection{UART Echo}
+The first step I took approaching this problem was to implement a UART echo module. For this part I simply connected the RX and TX pine of Alex Forencish's UART modules.
+Output waveform of SystemVerilog Simulation:
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.8\textwidth]{uart_echo_sim.png}
+  \caption{UART echo simulation}
+\end{figure}
+\newpage
+After the success of my initial simulation I ran the same test useing gate level synthesis:
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.8\textwidth]{uart_echo_gls.png}
+  \caption{UART echo gate level synthesis simulation}
+\end{figure}
+
+Finally the last step was to test the UART echo on the FPGA board. I used a python script and minicom to test.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.8\textwidth]{uart_echo.png}
+  \caption{UART echo in minicom}
+\end{figure}
+
+\subsection{Sending requests}
+
+The next step in creating a functional ALU was to create a way to test it. To do this I used the serial package to send a request.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.8\textwidth]{bytes_sent.png}
+  \caption{Request being sent}
+\end{figure}
+
+\newpage
+
+The instruction follows the following format:
+\begin{table}[h]
+  \centering
+  \begin{tabular}{|c|c|c|}
+    \hline
+    Byte & Field & Description\\
+    \hline
+    0 & Op code 1 & Specifies operation \\
+    \hline
+    1 & Reserved & currently unused \\
+    \hline
+    2 & Length LSB & LSB of command length \\
+    \hline
+    3 & Length MSB & MSB of command length \\
+    \hline
+    4-(4-Lenght - 1) & Data & Command payload \\
+    \hline
+  \end{tabular}
+  \caption{Request format}
+\end{table}
+
+The ALU supports the following opcodes:
+\begin{table}[h]
+  \centering
+  \begin{tabular}{|c|c|}
+    \hline
+    Code  & Description\\
+    \hline
+    0xEC & Echos back all data.  \\
+    \hline
+    0xAD & Adds a list of signed or unsigned 32-bit integers. \\
+    \hline
+    0xAF & Multiplies a list of signed 32-bit integers \\
+    \hline
+    0xA6 & Divides two signed 32-bit integers \\
+    \hline
+  \end{tabular}
+  \caption{Op codes}
+\end{table}
+\subsection{Implementation}
+
+I Implemented the ALU using a state machine. Theses are the possible states:
+\begin{itemize}
+  \item GET\_OP\_CODE
+This stage checks for a valied op code and saves the operation that much be completed. Goes to GET\_RESERVED.
+  \item GET\_RESERVED
+This stage doesn't do anything and transitions to GET\_LENGTH\_LSB. Useful for ignoring a byte.
+  \item GET\_LENGTH\_LSB
+Saves the first byte of the length and goes to GET\_LENGTH\_MSB.
+  \item GET\_LENGHT\_MSB.
+Saves the rest of the lenghth and goes to GET\_INITIAL\_VALUE or ECHO.
+  \item GET\_INITIAL\_VALUE
+Saves the first integer into the accumulator. Transitions to GET\_OPERAND.
+  \item GET\_OPERAND
+Gets next integer and transitions to the operator being performed.
+  \item ADD
+Adds operand to accumulator. Transitions to GET\_OPERAND or TRANSMIT.
+  \item MUL
+Multiplies operand and accumulator. Transitions to GET\_OPERAND or TRANSMIT.
+  \item DIV
+Divides accumulator by operand Transitions to TRANSMIT.
+  \item TRANSMIT
+Transmits accumulator via UART and transitions to GET\_OP\_CODE.
+  \item ECHO
+Echos all data received for length number of bytes. Transitions to GET\_OP\_CODE when complete.
+
+\end{itemize}
+
+One challenge I encounter while writing this part of the assignment was that the multiplier never sent ready. I worked around this be resetting the multiplier before using it. This worked, but there is liekly a more elegant way.
+\section{Testing}
+In order to test my implementation I created a test bench that runs 1000 tests of each operation each test has a random number of inputs with a random value for each input. I also tested the board after it was programmed using minicom and a python script. Simulation waveform:
+
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=0.8\textwidth]{multiply.png}
+  \caption{ALU testing multiply}
+\end{figure}
 
 
-
+The test benches were one of the harder parts to write for me. It seemed like the script wasn't waiting correctly, and I had to move edges around a lot to get to send and receive function to work.
 \end{document}

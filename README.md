@@ -1,7 +1,7 @@
 
 # UART ALU
 
-In this assignment I created an Arithmetic Logic Unit (ALU) that can perform a variety of operations on integers. The ALU supports the following operations:
+In this project I created an Arithmetic Logic Unit (ALU) that can perform a variety of operations on integers. The ALU is designed for an iCEBreaker FPGA. The ALU supports the following operations:
 
   * Echo back input.
   * Addition on a list of 32-bit integers.
@@ -11,7 +11,6 @@ In this assignment I created an Arithmetic Logic Unit (ALU) that can perform a v
 
 * <https://github.com/YosysHQ/oss-cad-suite-build/releases>
 * <https://github.com/zachjs/sv2v/releases>
-* <https://www.xilinx.com/support/download.html>
 
 ## Running
 

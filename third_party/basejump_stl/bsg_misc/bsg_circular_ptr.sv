@@ -10,6 +10,8 @@
 
 module bsg_circular_ptr #(parameter `BSG_INV_PARAM(slots_p)
                           , parameter `BSG_INV_PARAM(max_add_p)
+			  // whether there is a constant increment (e.g. 1 or 4, 5)
+			  , parameter const_incr_p = 1'b0
                           // local param
                           , parameter ptr_width_lp = `BSG_SAFE_CLOG2(slots_p)
 			  )
@@ -26,11 +28,18 @@ module bsg_circular_ptr #(parameter `BSG_INV_PARAM(slots_p)
    assign o = ptr_r;
    assign n_o = ptr_n;
 
+   initial 
+     begin
+       // Check that max_add_p fits in ptr_width_lp bits
+       assert (max_add_p < (1 << ptr_width_lp))
+         else $error("%m: max_add_p parameter too large");
+      end
+	
    // increment round robin pointers
 
    // synopsys sync_set_reset "reset_i"
    always_ff @(posedge clk)
-     if (reset_i) ptr_r <= 0;
+    if (reset_i) ptr_r <= '0;
      else       ptr_r <= ptr_n;
 
    if (slots_p == 1)
@@ -49,9 +58,9 @@ module bsg_circular_ptr #(parameter `BSG_INV_PARAM(slots_p)
     if (`BSG_IS_POW2(slots_p))
        begin
 	  // reduce critical path on add_i signal
-	  if (max_add_p == 1)
+	if ((max_add_p == 1) || const_incr_p)
 	    begin
-	       wire [ptr_width_lp-1:0] ptr_r_p1 = ptr_r + 1'b1;
+	       wire [ptr_width_lp-1:0] ptr_r_p1 = ptr_r + max_add_p[ptr_width_lp-1:0];
 	       assign  ptr_n = add_i ? ptr_r_p1 : ptr_r;
 	    end
 	  else
